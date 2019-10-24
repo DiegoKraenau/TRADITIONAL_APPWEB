@@ -41,14 +41,19 @@ namespace RapiSolver.Controllers
             {
                 return NotFound();
             }
+            //ServiceDetails sd = _context.servicios.Find()
+            //ViewBag.Supplier = _context.suppliers.Find(servicio.ServicioId)
 
             return View(servicio);
+
+
+
         }
 
         // GET: Servicio/Create
         public IActionResult Create()
         {
-            ViewData["ServiceCategoryId"] = new SelectList(_context.categories, "ServiceCategoryId", "ServiceCategoryId");
+            ViewData["ServiceCategoryId"] = new SelectList(_context.categories, "ServiceCategoryId", "CategoryName");
             return View();
         }
 
@@ -57,16 +62,31 @@ namespace RapiSolver.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ServicioId,Name,Description,Cost,ServiceCategoryId")] Servicio servicio)
+        public IActionResult Create(int ServicioId, string Name, string Description, string Cost, int ServiceCategoryId)
         {
+            Servicio servicio = new Servicio();
+            servicio.ServicioId = ServicioId;
+            servicio.Name = Name;
+            servicio.Description = Description;
+            servicio.Cost = Cost;
+            servicio.ServiceCategoryId = ServiceCategoryId;
+            
             if (ModelState.IsValid)
             {
                 _context.Add(servicio);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                _context.SaveChanges();
             }
             ViewData["ServiceCategoryId"] = new SelectList(_context.categories, "ServiceCategoryId", "ServiceCategoryId", servicio.ServiceCategoryId);
-            return View(servicio);
+
+            ServiceDetails sd1 = new ServiceDetails();
+            sd1.Servicio = _context.servicios.Find(ServicioId);
+            sd1.ServicioId = servicio.ServicioId;
+            sd1.Supplier = _context.suppliers.Find(1);
+            sd1.SupplierId = 1;
+            _context.Add(sd1);
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Servicio/Edit/5
