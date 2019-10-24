@@ -20,10 +20,26 @@ namespace RapiSolver.Controllers
         }
 
         // GET: Servicio
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
             var applicationDbContext = _context.servicios.Include(s => s.ServiceCategory);
-            return View(await applicationDbContext.ToListAsync());
+
+            var servicios = from s in _context.servicios select s;
+            servicios = servicios.Include(s => s.ServiceCategory);
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                servicios = servicios.Where(s => s.Name.Contains(searchString));
+            }
+
+            return View(await servicios.ToListAsync());
+        }
+
+
+        [HttpPost]
+        public string Index(string searchString, bool notUsed)
+        {
+            return "From [HttpPost]Index: filter on " + searchString;
         }
 
         // GET: Servicio/Details/5
