@@ -43,24 +43,59 @@ namespace RapiSolver.Controllers
         }
 
         // GET: Servicio/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var servicio = await _context.servicios
-                .Include(s => s.ServiceCategory)
-                .FirstOrDefaultAsync(m => m.ServicioId == id);
-            if (servicio == null)
+            var details = _context.serviceDetails
+                .Include(o => o.Supplier)
+                .Include(o => o.Supplier.Location)
+                .Include(o => o.Supplier.Usuario)
+                .Include(o => o.Servicio)
+                .Include(o => o.Servicio.ServiceCategory)
+                .OrderByDescending(o => o.ServiceDetailsId)
+                .Take(10)
+                .Where(o => o.ServicioId == id)
+                .ToList();
+
+
+            IEnumerable<ServiceDetailsViewModel> enumerable = details.Select(o => new ServiceDetailsViewModel
+            {
+                ServiceDetailsId = o.ServiceDetailsId,
+                SupplierId = o.SupplierId,
+                ServicioId = o.ServicioId,
+                Name = o.Supplier.Name,
+                LastName = o.Supplier.LastName,
+                Email = o.Supplier.Email,
+                Phone = o.Supplier.Phone,
+                Age = o.Supplier.Age,
+                Gender = o.Supplier.Gender,
+                UsuarioId = o.Supplier.Usuario.UsuarioId,
+                LocationId = o.Supplier.Location.LocationId,
+                UserName = o.Supplier.Usuario.UserName,
+                Country = o.Supplier.Location.Country,
+                ServiceName = _context.serviceDetails.Find(o.ServiceDetailsId).Servicio.Name,
+                Description = _context.serviceDetails.Find(o.ServiceDetailsId).Servicio.Description,
+                Cost = _context.serviceDetails.Find(o.ServiceDetailsId).Servicio.Cost,
+                ServiceCategoryId = _context.serviceDetails.Find(o.ServiceDetailsId).Servicio.ServiceCategoryId,
+                CategoryName = _context.serviceDetails.Find(o.ServiceDetailsId).Servicio.ServiceCategory.CategoryName
+            });
+            ServiceDetailsViewModel detalle = new ServiceDetailsViewModel();
+            detalle = enumerable.First();
+
+
+            if (enumerable == null)
             {
                 return NotFound();
             }
             //ServiceDetails sd = _context.servicios.Find()
             //ViewBag.Supplier = _context.suppliers.Find(servicio.ServicioId)
 
-            return View(servicio);
+            ViewBag.Detalle = detalle;
+            return View();
 
 
 
