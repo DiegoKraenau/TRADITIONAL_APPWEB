@@ -59,17 +59,53 @@ namespace RapiSolver.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CustomerId,Name,LastName,Email,Phone,Age,Gender,UsuarioId,LocationId,Country,State,City,Address,Contraseña")] Customer customer)
+        public IActionResult Create(int CustomerId, string Name, string LastName,
+            string Email, string Phone, string Age, string Gender, string Country, 
+            string State, string City, string Address, string Contraseña)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(customer);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["LocationId"] = new SelectList(_context.locations, "LocationId", "LocationId", customer.LocationId);
-            ViewData["UsuarioId"] = new SelectList(_context.usuarios, "UsuarioId", "UsuarioId", customer.UsuarioId);
-            return View(customer);
+            
+            Usuario u1 = new Usuario();
+            u1.UserName = Email;
+            u1.UserPassword = Contraseña;
+            u1.RolId = 1;
+            u1.Rol=_context.roles.Find(u1.RolId);
+
+            _context.Add(u1);
+            _context.SaveChanges();
+
+            Location l1 = new Location();
+            l1.Country = Country;
+            l1.City = City;
+            l1.State = State;
+            l1.Address =Address;
+
+            _context.Add(l1);
+            _context.SaveChanges();
+
+            Customer c1 = new Customer();
+           
+            c1.Location=l1;
+            c1.LocationId=l1.LocationId;
+            c1.Usuario=_context.usuarios.Find(c1.UsuarioId);
+            c1.UsuarioId = u1.UsuarioId;
+            c1.Name=Name;
+            c1.LastName=LastName;
+            c1.Email = Email;
+            c1.Phone = Phone;
+            c1.Age = Age;
+            c1.Gender = Gender;
+            c1.Country = Country;
+            c1.State=State;
+            c1.City = City;
+            c1.Address = Address;
+            c1.Contraseña = Contraseña;
+                
+            _context.Add(c1);
+            _context.SaveChanges();
+
+
+
+            return Redirect("/Servicio/Index");
         }
 
         // GET: Customer/Edit/5
